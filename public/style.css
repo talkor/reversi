@@ -1,0 +1,37 @@
+.wrapper {
+  display: grid;
+  grid-gap: 1%;
+  max-width: 500px;
+  margin: 0 auto;
+  grid-template-columns: repeat(8, 1fr) ;
+  background-color: #fff;
+  color: #444;
+}
+
+.square {
+  position: relative;
+  background-color: #888;
+  border-radius: 10%;
+  padding-top: 100%;
+  font-size: 150%;
+}
+
+.square > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-block;
+  content: '';
+  padding-top: 100%;
+  border-radius: 50%;
+  width: 100%;
+  transform: scale(0.8);
+}
+
+.white {
+  background-color: #fff;
+}
+
+.black {
+  background-color: #000;
+}
