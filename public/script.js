@@ -17,7 +17,8 @@ function init() {
 
 function renderBoard() {
   for (let i = 0; i < m * m; i++) {
-    wrapper.innerHTML += `<div class='square'><span class='s-${i}'></span></div>`;
+    wrapper.innerHTML += `<div class='square' data-position="${i}"><span></span></div>`;
+    
     board.push({
       id: i,
       isBlack: false,
@@ -29,10 +30,9 @@ function renderBoard() {
 function setSquareClickListener() {
   document.querySelectorAll('.square').forEach(square => {
     square.addEventListener('click', event => {
-      console.log(event.target.classList[0].replace('s-', ''));
-      square.childNodes[0].classList.remove('black');
-      square.childNodes[0].classList.remove('white');
-      square.childNodes[0].classList.add(player1 ? 'black' : 'white');
+      square.classList.remove('black');
+      square.classList.remove('white');
+      square.classList.add(player1 ? 'black' : 'white');
       player1 = !player1;
       
       playerField.innerHTML = player1 ? 'Player 1' : 'Player 2';
@@ -48,7 +48,7 @@ function setInitialPos() {
   let addedClass;
   initialPos.forEach(squarePos => {
     addedClass = addedClass === 'white' ? 'black' : 'white';
-    document.querySelector(`.square .s-${squarePos}`).classList.add(addedClass);
+    document.querySelector(`.square[data-position="${squarePos}"]`).classList.add(addedClass);
   });
 }
 

@@ -36,16 +36,16 @@ body {
   transition: all 0.3s ease;
 }
 
-.white,
-.black {
+.white span,
+.black span {
   box-shadow: 5px 3px 5px 0px rgba(0,0,0,0.25);
 }
 
-.white {
+.white span {
   background-color: #fff;
 }
 
-.black {
+.black span {
   background-color: #000;
 }
 
