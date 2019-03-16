@@ -24,11 +24,11 @@ body {
 }
 
 .square > span {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   display: inline-block;
-  content: '';
   padding-top: 100%;
   border-radius: 50%;
   width: 100%;
@@ -51,4 +51,16 @@ body {
 
 .timer {
   font-size: 1.5em;
+}
+
+.legal-white:hover span {
+  opacity: 0.5;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.legal-black:hover span {
+  opacity: 0.5;
+  background-color: #000;
+  cursor: pointer;
 }

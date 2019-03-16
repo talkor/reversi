@@ -63,3 +63,4 @@ function setGameClock() {
     seconds.innerHTML = (totalSeconds % 60).toString().padStart(2, '0');;
   }, 1000);
 }
+// TODO: add .lagel class to elements that are legal moves
