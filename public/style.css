@@ -1,16 +1,23 @@
+body {
+  text-align: center;
+  font-family: 'Avenir';
+  background: #00f260;
+  background: -webkit-linear-gradient(to right, #00f260, #0575e6);
+  background: linear-gradient(to right, #00f260, #0575e6);
+}
+
 .wrapper {
   display: grid;
   grid-gap: 1%;
   max-width: 500px;
   margin: 0 auto;
   grid-template-columns: repeat(8, 1fr) ;
-  background-color: #fff;
   color: #444;
 }
 
 .square {
   position: relative;
-  background-color: #888;
+  background-color: #025525;
   border-radius: 10%;
   padding-top: 100%;
   font-size: 150%;
@@ -26,6 +33,12 @@
   border-radius: 50%;
   width: 100%;
   transform: scale(0.8);
+  transition: all 0.3s ease;
+}
+
+.white,
+.black {
+  box-shadow: 5px 3px 5px 0px rgba(0,0,0,0.25);
 }
 
 .white {
@@ -34,4 +47,8 @@
 
 .black {
   background-color: #000;
+}
+
+.timer {
+  font-size: 1.5em;
 }
