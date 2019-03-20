@@ -11,7 +11,7 @@ body {
   grid-gap: 1%;
   max-width: 500px;
   margin: 0 auto;
-  grid-template-columns: repeat(8, 1fr) ;
+  grid-template-columns: repeat(10, 1fr) ;
   color: #444;
 }
 
@@ -53,14 +53,20 @@ body {
   font-size: 1.5em;
 }
 
-.legal-white:hover span {
-  opacity: 0.5;
-  background-color: #fff;
+.legal-white span,
+.legal-black span {
+  opacity: 0.25;
   cursor: pointer;
 }
 
+.legal-white:hover span {
+  background-color: #fff;
+}
+
 .legal-black:hover span {
-  opacity: 0.5;
   background-color: #000;
-  cursor: pointer;
+}
+
+.player-field {
+  padding-top: 0;
 }
