@@ -85,12 +85,29 @@ function swapSquares(player, x, y) {
 
   const newSquares = [];
 
-  const row = document.querySelectorAll(`.square.${swappedColor}[data-x="${x}"]`);
-  const col = document.querySelectorAll(`.square.${swappedColor}[data-y="${y}"]`);
+  const row = document.querySelectorAll(`.square.black[data-x="${x}"], .square.white[data-x="${x}"]`);
+  const col = document.querySelectorAll(`.square.black[data-y="${y}"], .square.white[data-y="${y}"]`);
   
-  if (row !== undefined && row.length !== 0) newSquares.push(row);
-  if (col !== undefined && col.length !== 0) newSquares.push(col);
-    // newSquares.push(document.querySelectorAll(`.square.black[data-x="${x}"][data-y="${y}"]`));
+  if (row[0].classList.contains(newColor) && row[row.length-1].classList.contains(newColor)) {
+    for (let i = 0; i < row.length; i++) {
+      if (row[i].classList.contains(swappedColor)) {
+        row[i].classList.remove(swappedColor);
+        row[i].classList.add(newColor);
+      }
+    }
+  }
+
+  if (col[0].classList.contains(newColor) && col[col.length-1].classList.contains(newColor)) {
+    for (let i = 0; i < col.length; i++) {
+      if (col[i].classList.contains(swappedColor)) {
+        col[i].classList.remove(swappedColor);
+        col[i].classList.add(newColor);
+      }
+    }
+  }
+
+  
+  // newSquares.push(document.querySelectorAll(`.square.black[data-x="${x}"][data-y="${y}"]`));
 
   for (let i = 0; i < newSquares.length; i++) {
     newSquares[i][0].classList.remove(swappedColor);
