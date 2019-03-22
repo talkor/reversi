@@ -1,10 +1,11 @@
 const gridWrapper = document.querySelector('.grid-wrapper');
 const playerField = document.querySelector('.player-field')
 const m = 10;
-const initialPos = [{ x: 4, y:4 }, { x: 5, y: 4 }, { x: 5, y: 5 }, {x: 4, y: 5 }];
+const initialPos = [{ x: 4, y:4 }, { x: 5, y: 4 }, { x: 5, y: 5 }, { x: 4, y: 5 }];
 let player1 = true;
 let turnTimestamp = 0;
 let clockInterval;
+let tutorialMode = false;
 
 function statsObj(totalTurnsDuration, totalAvgTime) {
   this.score = 2;
@@ -31,6 +32,7 @@ function init() {
   initSkipButton();
   initResignButton();
   initResetButton();
+  initTutorialModeCheckbox();
   checkLegalMove(player1);
 }
 
@@ -58,6 +60,16 @@ function initSkipButton() {
 function initResignButton() {
   document.querySelector('.resign').addEventListener('click', () => {
     gameOver(!player1);
+  });
+}
+
+function initTutorialModeCheckbox() {
+  document.querySelector('.learning-mode input').addEventListener('change', function() {
+    if (this.checked) {
+      tutorialMode = true;
+    } else {
+      tutorialMode = false;
+    }
   });
 }
 
@@ -176,6 +188,20 @@ function setSquareClickListener() {
         }
       });
     });
+
+    square.addEventListener('mouseover', event => {
+      colors.forEach(color => {
+        if (tutorialMode && square.classList.contains(`legal-${color}`)) {
+          tutorialModeCheck(player1, square.dataset.x, square.dataset.y);
+        }
+      });
+    });
+
+    square.addEventListener('mouseleave', event => {
+        if (tutorialMode) {
+          clearTutorialHints();
+        }
+    });
   });
 }
 
@@ -206,8 +232,15 @@ function prepateNextTurn() {
     playerField.classList.add('white-text');
   }
 
+  if (tutorialMode) clearTutorialHints();
   clearLegalMoves();
   checkLegalMove(player1);
+}
+
+function clearTutorialHints() {
+  document.querySelectorAll(`.square span`).forEach(square => {
+    square.innerHTML = '';
+  });
 }
 
 function clearLegalMoves() {
@@ -241,6 +274,44 @@ function initGameClock() {
     minutes.innerHTML = (parseInt(totalSeconds / 60)).toString().padStart(2, '0');
     seconds.innerHTML = (totalSeconds % 60).toString().padStart(2, '0');;
   }, 1000);
+}
+
+function tutorialModeCheck(player, srcX, srcY) {
+  const swappedColor = player ? 'white' : 'black';
+  const newColor = player ? 'black' : 'white';
+
+  const squaresToSwap = [];
+  
+  const offsets = [
+    { x:  0, y:  1 }, 
+    { x:  0, y: -1 }, 
+    { x:  1, y:  0 }, 
+    { x: -1, y:  0 }, 
+    { x:  1, y:  1 }, 
+    { x: -1, y: -1 }, 
+    { x:  1, y: -1 }, 
+    { x: -1, y:  1 }, 
+  ];
+
+  for (let i = 0; i < offsets.length; i++) {
+    let possibleSwaps = [];
+    let x = parseInt(srcX, 10) + offsets[i].x;
+    let y = parseInt(srcY, 10) + offsets[i].y; 
+
+    while (square = document.querySelector(`.square.black[data-x="${x}"][data-y="${y}"], .square.white[data-x="${x}"][data-y="${y}"]`)) {
+      if (square.classList.contains(newColor)) {
+        squaresToSwap.push(...possibleSwaps);
+        break;
+      } else {
+        possibleSwaps.push(square);
+      }
+  
+      x = parseInt(x, 10) + offsets[i].x;
+      y = parseInt(y, 10) + offsets[i].y;
+    }
+  }
+
+  document.querySelector(`.square[data-x="${srcX}"][data-y="${srcY}"] span`).innerHTML = squaresToSwap.length;
 }
 
 function swapSquares(player, srcX, srcY) {

@@ -123,3 +123,7 @@ h3 {
   display: block;
   margin-bottom: 5px;
 }
+
+.learning-mode input {
+  outline: 0;
+}
