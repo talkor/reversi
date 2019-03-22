@@ -10,7 +10,7 @@ function statsObj() {
   this.turns = 0;
   this.turnTimes = [];
   this.avgTime = 0;
-  this.onlyTwo = 0;
+  this.onlyTwo = 1;
 }
 
 let statsA;
@@ -56,7 +56,6 @@ function updateStatsOnDOM() {
     document.querySelector(`.stats-${player} .avg-time`).innerHTML = `${statsObj.avgTime}s`;
     document.querySelector(`.stats-${player} .only-two`).innerHTML = statsObj.onlyTwo; 
   })
-    
 }
 
 function updateStats() {
@@ -68,7 +67,7 @@ function updateStats() {
   // Update average turn time
   calculateTurnTime(currentPlayerStats);
 
-  // Calculate score
+  // Calculate score and onlyTwo
   calculateScore();
 
   updateStatsOnDOM();
@@ -80,6 +79,9 @@ function calculateScore() {
 
   statsA.score = numBlackCircles;
   statsB.score = numWhiteCircles;
+
+  if (numBlackCircles === 2) { statsA.onlyTwo++ };
+  if (numWhiteCircles === 2) { statsB.onlyTwo++ };
 }
 
 function calculateTurnTime(currentPlayerStats) {
@@ -127,7 +129,14 @@ function setSquareClickListener() {
 
 function prepateNextTurn() {
   player1 = !player1;
-  playerField.innerHTML = player1 ? 'Player 1 (Black)' : 'Player 2 (White)';
+
+  if (player1) {
+    playerField.innerHTML = 'Player 1';
+    playerField.classList.remove('white-text');
+  } else {
+    playerField.innerHTML = 'Player 2';
+    playerField.classList.add('white-text');
+  }
 
   clearLegalMoves();
   checkLegalMove(player1);
@@ -141,11 +150,13 @@ function clearLegalMoves() {
 }
 
 function initPlayerField() {
-  playerField.innerHTML = `Player 1 (Black)`;
+  playerField.classList.remove('white-text');
+  playerField.innerHTML = `Player 1`;
 }
 
 function setInitialPos() {
   let addedClass;
+
   initialPos.forEach(pos => {
     addedClass = addedClass === 'white' ? 'black' : 'white';
     document.querySelector(`.square[data-x="${pos.x}"][data-y="${pos.y}"]`).classList.add(addedClass);
@@ -190,7 +201,6 @@ function swapSquares(player, x, y) {
       }
     }
   }
-
   
   // newSquares.push(document.querySelectorAll(`.square.black[data-x="${x}"][data-y="${y}"]`));
 
