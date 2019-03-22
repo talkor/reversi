@@ -17,11 +17,20 @@
         </div>
 
         <div class="stats-general">
-          <span>Now Playing</span>
-          <h2 class="player-field"></h2>
-          <button class="skip-button">Skip Turn</button>
-          <div class="timer">
-            <span class="minutes">00</span>:<span class="seconds">00</span>
+          <div class="game-on">
+              <span>Now Playing</span>
+              <h2 class="player-field"></h2>
+              <button class="game-button skip">Skip Turn</button>
+              <div class="timer">
+                <span class="minutes">00</span>:<span class="seconds">00</span>
+              </div>
+              <div class="learning-mode"><input type="checkbox" /> Learning mode</div>
+          </div>
+
+          <div class="game-over">
+              <span>Game Over!</span>
+              <h2 class="winner"></h2>
+              <button class="game-button reset">New Game?</button>
           </div>
         </div>
 

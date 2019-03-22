@@ -4,12 +4,13 @@ const m = 10;
 const initialPos = [{ x: 4, y:4 }, { x: 5, y: 4 }, { x: 5, y: 5 }, {x: 4, y: 5 }];
 let player1 = true;
 let turnTimestamp = 0;
+let clockInterval;
 
 function statsObj() {
   this.score = 2;
   this.turns = 0;
   this.turnTimes = [];
-  this.avgTime = 0;
+  this.avgTime = '0.0';
   this.onlyTwo = 1;
 }
 
@@ -26,6 +27,7 @@ function init() {
   initGameClock();
   initStats();
   initSkipButton();
+  initResetButton();
   checkLegalMove(player1);
 }
 
@@ -40,8 +42,27 @@ function initStats() {
 }
 
 function initSkipButton() {
-  document.querySelector('.skip-button').addEventListener('click', () => {
+  document.querySelector('.skip').addEventListener('click', () => {
     prepateNextTurn();
+  });
+}
+
+function initResetButton() {
+  document.querySelector('.reset').addEventListener('click', () => {
+    const elementToClear = document.querySelectorAll('.square');
+    for (let i = 0; i < elementToClear.length; i++) {
+      elementToClear[i].classList.remove('black');
+      elementToClear[i].classList.remove('white');
+      elementToClear[i].classList.remove('legal-black');
+      elementToClear[i].classList.remove('legal-white');
+    }
+
+    gameOn();
+    initGameClock();
+    initPlayerField();
+    setInitialPos();
+    initStats();
+    checkLegalMove(player1);
   });
 }
 
@@ -121,10 +142,15 @@ function setSquareClickListener() {
           swapSquares(player1, square.dataset.x, square.dataset.y);
           updateStats();
           prepateNextTurn();
+          checkGameOver();
         }
       });
     });
   });
+}
+
+function checkGameOver() {
+
 }
 
 function prepateNextTurn() {
@@ -144,8 +170,8 @@ function prepateNextTurn() {
 
 function clearLegalMoves() {
   document.querySelectorAll('.legal-white, .legal-black').forEach(square => {
-    if (square.classList.contains('legal-white')) square.classList.remove('legal-white');
-    if (square.classList.contains('legal-black')) square.classList.remove('legal-black');
+    square.classList.remove('legal-white');
+    square.classList.remove('legal-black');
   });
 }
 
@@ -168,7 +194,7 @@ function initGameClock() {
   let seconds = document.querySelector('.seconds');
   let totalSeconds = 0;
 
-  setInterval(() => {
+  clockInterval = setInterval(() => {
     totalSeconds++;
     minutes.innerHTML = (parseInt(totalSeconds / 60)).toString().padStart(2, '0');
     seconds.innerHTML = (totalSeconds % 60).toString().padStart(2, '0');;
@@ -224,4 +250,19 @@ function checkLegalMove(player){
         }
       }
   })
+}
+
+function gameOver(player) {
+  clearInterval(clockInterval);
+
+  document.querySelector('.game-on').style.display = 'none';
+  document.querySelector('.game-over').style.display = 'block';
+  document.querySelector('.winner').innerHTML = `Player ${player ? '1' : '2'} won!`;
+
+  clearLegalMoves();
+}
+
+function gameOn() {
+  document.querySelector('.game-on').style.display = 'block';
+  document.querySelector('.game-over').style.display = 'none';
 }
