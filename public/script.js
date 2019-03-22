@@ -180,7 +180,19 @@ function setSquareClickListener() {
 }
 
 function checkGameOver() {
+  const numSquares = document.querySelectorAll('.square:not(.black):not(.white)');
 
+  if (numSquares.length === 0) {
+    gameOver(statsA.score > statsB.score ? player1 : !player1);
+  }
+
+  if (statsA.score === 0) {
+    gameOver(false);
+  }
+
+  if (statsB.score === 0) {
+    gameOver(true);
+  }
 }
 
 function prepateNextTurn() {
@@ -238,14 +250,14 @@ function swapSquares(player, srcX, srcY) {
   const squaresToSwap = [];
   
   const offsets = [
-    { x: 0, y: 1 }, 
-    { x: 0, y: -1 }, 
-    { x: 1, y: 0 }, 
-    { x: -1, y: 0 }, 
-    { x: 1, y: 1 }, 
+    { x:  0, y:  1 }, 
+    { x:  0, y: -1 }, 
+    { x:  1, y:  0 }, 
+    { x: -1, y:  0 }, 
+    { x:  1, y:  1 }, 
     { x: -1, y: -1 }, 
-    { x: 1, y: -1 }, 
-    { x: -1, y: 1 }, 
+    { x:  1, y: -1 }, 
+    { x: -1, y:  1 }, 
   ];
 
   for (let i = 0; i < offsets.length; i++) {
@@ -286,7 +298,6 @@ function findEdgeSquare(color, x, y, offsetX, offsetY) {
   }
 }
 
-
 function checkLegalMove(player){
   const currentColor = player ? 'black' : 'white';
   const oppositeColor = player ? 'white' : 'black';
@@ -311,7 +322,8 @@ function zeroizeClock() {
 function gameOver(player) {
   clearInterval(clockInterval);
   zeroizeClock();
-  if (player1) document.querySelector('.winner').classList.add('white-text');
+
+  if (!player) document.querySelector('.winner').classList.add('white-text');
   document.querySelector('.game-on').style.display = 'none';
   document.querySelector('.game-over').style.display = 'block';
   document.querySelector('.winner').innerHTML = `Player ${player ? '1' : '2'} won!`;
