@@ -34,9 +34,14 @@ function init() {
   checkLegalMove(player1);
 }
 
-function initStats() {
-  statsA = new statsObj([], '0.0');
-  statsB = new statsObj([], '0.0');
+function initStats(options) {
+  if (options && options.continuing) {
+    statsA = new statsObj(statsA.totalTurnsDuration, statsA.totalAvgTime);
+    statsB = new statsObj(statsB.totalTurnsDuration, statsB.totalAvgTime);
+  } else {
+    statsA = new statsObj([], '0.0');
+    statsB = new statsObj([], '0.0'); 
+  }
 
   // Init turn time for the first turn
   turnTimestamp = new Date().getTime();
@@ -66,12 +71,14 @@ function initResetButton() {
       elementToClear[i].classList.remove('legal-white');
     }
 
+    player1 = true;
     gameOn();
     initGameClock();
     initPlayerField();
     setInitialPos();
-    initStats();
+    initStats({ continuing: true });
     checkLegalMove(player1);
+    document.querySelector('.winner').classList.remove('white-text');
   });
 }
 
@@ -119,17 +126,30 @@ function calculateTurnTime(currentPlayerStats) {
   const nowTimestamp = new Date().getTime();
   const elapsedTurnTime = ((nowTimestamp - turnTimestamp) / 1000).toFixed(1);
   currentPlayerStats.turnsDuration.push(elapsedTurnTime);
+  currentPlayerStats.totalTurnsDuration.push(elapsedTurnTime);
   currentPlayerStats.avgTime = calculateAvgTurnTime(currentPlayerStats);
+  currentPlayerStats.totalAvgTime = calculateTotalAvgTurnTime(currentPlayerStats);
   turnTimestamp = new Date().getTime();
 }
 
 function calculateAvgTurnTime(currentPlayerStats) {
   let sum = 0;
+
   currentPlayerStats.turnsDuration.forEach(turn => {
     sum += parseInt(turn, 10);
   });
 
   return (sum / currentPlayerStats.turnsDuration.length).toFixed(1);
+}
+
+function calculateTotalAvgTurnTime(currentPlayerStats) {
+  let sum = 0;
+
+  currentPlayerStats.totalTurnsDuration.forEach(turn => {
+    sum += parseInt(turn, 10);
+  });
+
+  return (sum / currentPlayerStats.totalTurnsDuration.length).toFixed(1);
 }
 
 function renderBoard() {
@@ -270,15 +290,15 @@ function zeroizeClock() {
 function gameOver(player) {
   clearInterval(clockInterval);
   zeroizeClock();
-  player1 = true;
+  if (player1) document.querySelector('.winner').classList.add('white-text');
   document.querySelector('.game-on').style.display = 'none';
   document.querySelector('.game-over').style.display = 'block';
   document.querySelector('.winner').innerHTML = `Player ${player ? '1' : '2'} won!`;
-
   clearLegalMoves();
 }
 
 function gameOn() {
   document.querySelector('.game-on').style.display = 'block';
   document.querySelector('.game-over').style.display = 'none';
+  playerField.classList.remove('white-text');
 }

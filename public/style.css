@@ -11,6 +11,10 @@ body {
   margin: 0 auto;
 }
 
+h1 {
+  margin: 20px 0 10px 0;
+}
+
 .grid-wrapper {
   display: grid;
   grid-gap: 1%;
