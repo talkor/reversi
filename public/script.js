@@ -6,11 +6,13 @@ let player1 = true;
 let turnTimestamp = 0;
 let clockInterval;
 
-function statsObj() {
+function statsObj(totalTurnsDuration, totalAvgTime) {
   this.score = 2;
   this.turns = 0;
-  this.turnTimes = [];
+  this.turnsDuration = [];
+  this.totalTurnsDuration = totalTurnsDuration;
   this.avgTime = '0.0';
+  this.totalAvgTime = totalAvgTime;
   this.onlyTwo = 1;
 }
 
@@ -27,13 +29,14 @@ function init() {
   initGameClock();
   initStats();
   initSkipButton();
+  initResignButton();
   initResetButton();
   checkLegalMove(player1);
 }
 
 function initStats() {
-  statsA = new statsObj();
-  statsB = new statsObj();
+  statsA = new statsObj([], '0.0');
+  statsB = new statsObj([], '0.0');
 
   // Init turn time for the first turn
   turnTimestamp = new Date().getTime();
@@ -44,6 +47,12 @@ function initStats() {
 function initSkipButton() {
   document.querySelector('.skip').addEventListener('click', () => {
     prepateNextTurn();
+  });
+}
+
+function initResignButton() {
+  document.querySelector('.resign').addEventListener('click', () => {
+    gameOver(!player1);
   });
 }
 
@@ -75,8 +84,9 @@ function updateStatsOnDOM() {
     document.querySelector(`.stats-${player} .score`).innerHTML = statsObj.score;
     document.querySelector(`.stats-${player} .turns`).innerHTML = statsObj.turns;
     document.querySelector(`.stats-${player} .avg-time`).innerHTML = `${statsObj.avgTime}s`;
+    document.querySelector(`.stats-${player} .total-avg-time`).innerHTML = `${statsObj.totalAvgTime}s`;
     document.querySelector(`.stats-${player} .only-two`).innerHTML = statsObj.onlyTwo; 
-  })
+  });
 }
 
 function updateStats() {
@@ -108,18 +118,18 @@ function calculateScore() {
 function calculateTurnTime(currentPlayerStats) {
   const nowTimestamp = new Date().getTime();
   const elapsedTurnTime = ((nowTimestamp - turnTimestamp) / 1000).toFixed(1);
-  currentPlayerStats.turnTimes.push(elapsedTurnTime);
+  currentPlayerStats.turnsDuration.push(elapsedTurnTime);
   currentPlayerStats.avgTime = calculateAvgTurnTime(currentPlayerStats);
   turnTimestamp = new Date().getTime();
 }
 
 function calculateAvgTurnTime(currentPlayerStats) {
   let sum = 0;
-  currentPlayerStats.turnTimes.forEach(turn => {
+  currentPlayerStats.turnsDuration.forEach(turn => {
     sum += parseInt(turn, 10);
   });
 
-  return (sum / currentPlayerStats.turnTimes.length).toFixed(1);
+  return (sum / currentPlayerStats.turnsDuration.length).toFixed(1);
 }
 
 function renderBoard() {
@@ -252,9 +262,15 @@ function checkLegalMove(player){
   })
 }
 
+function zeroizeClock() {
+  document.querySelector('.minutes').innerHTML = '00';
+  document.querySelector('.seconds').innerHTML = '00';
+}
+
 function gameOver(player) {
   clearInterval(clockInterval);
-
+  zeroizeClock();
+  player1 = true;
   document.querySelector('.game-on').style.display = 'none';
   document.querySelector('.game-over').style.display = 'block';
   document.querySelector('.winner').innerHTML = `Player ${player ? '1' : '2'} won!`;
