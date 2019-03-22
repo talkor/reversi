@@ -64,7 +64,7 @@ function initResignButton() {
 }
 
 function initTutorialModeCheckbox() {
-  document.querySelector('.learning-mode input').addEventListener('change', function() {
+  document.querySelector('.tutorial-mode input').addEventListener('change', function() {
     if (this.checked) {
       tutorialMode = true;
     } else {
@@ -240,6 +240,8 @@ function prepateNextTurn() {
 function clearTutorialHints() {
   document.querySelectorAll(`.square span`).forEach(square => {
     square.innerHTML = '';
+    square.classList.remove('hint');
+
   });
 }
 
@@ -311,7 +313,12 @@ function tutorialModeCheck(player, srcX, srcY) {
     }
   }
 
-  document.querySelector(`.square[data-x="${srcX}"][data-y="${srcY}"] span`).innerHTML = squaresToSwap.length;
+  const hintSquare = document.querySelector(`.square[data-x="${srcX}"][data-y="${srcY}"] span`);
+  
+  if (hintSquare ) {
+    hintSquare.innerHTML = squaresToSwap.length;
+    hintSquare.classList.add('hint');
+  }
 }
 
 function swapSquares(player, srcX, srcY) {

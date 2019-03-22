@@ -43,13 +43,13 @@ h1 {
   border-radius: 50%;
   width: 100%;
   height: 100%;
-  transform: scale(0.8);
-  transition: all 0.3s ease;
+  transform: scale(.8);
+  transition: all .3s ease;
 }
 
 .white span,
 .black span {
-  box-shadow: 5px 3px 5px 0px rgba(0,0,0,0.25);
+  box-shadow: 5px 3px 5px 0px rgba(0, 0, 0, .25);
 }
 
 .white span {
@@ -66,16 +66,28 @@ h1 {
 
 .legal-white span,
 .legal-black span {
-  opacity: 0.25;
   cursor: pointer;
 }
 
 .legal-white:hover span {
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, .25);
 }
 
 .legal-black:hover span {
-  background-color: #000;
+  background-color: rgba(0, 0, 0, .25);
+}
+
+.legal-black:hover span.hint,
+.legal-white:hover span.hint {
+  line-height: 200%;
+}
+
+.legal-white:hover span.hint {
+  color: rgba(255, 255, 255, 1);
+}
+
+.legal-black:hover span.hint {
+  color: rgba(0, 0, 0, 1);
 }
 
 .player-field,
@@ -99,7 +111,7 @@ h3 {
 
 .game-button {
   margin: 5px;
-  border: 1px solid rgb(255, 255, 255, 0.5);
+  border: 1px solid rgb(255, 255, 255, .5);
   border-radius: 20px;
   background-color: rgb(5, 117, 230, 0);
   color: #fff;
@@ -112,18 +124,28 @@ h3 {
 }
 
 .game-button:hover {
-  background-color: rgb(5, 117, 230, 0.3)
+  background-color: rgb(5, 117, 230, .3)
 }
 
 .game-over {
   display: none;
 }
 
-.learning-mode {
-  display: block;
+.tutorial-mode {
   margin-bottom: 5px;
 }
 
-.learning-mode input {
+.tutorial-mode label,
+.tutorial-mode input {
+  cursor: pointer;
+}
+
+.tutorial-mode input {
   outline: 0;
+}
+
+@media(max-width: 486px) {
+  .hint {
+    font-size: 0.85em;
+  }
 }
