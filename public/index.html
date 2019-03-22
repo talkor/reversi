@@ -5,14 +5,39 @@
     <title>Reversi</title>
   </head>
   <body>
-    <h1>Reversi</h1>
-    <span>Now Playing</span>
-    <h2 class="player-field"></h2>
-    <div class="timer">
-      <span class="minutes">00</span>:<span class="seconds">00</span>
+    <div class="container">
+      <h1>Reversi</h1>
+      <div class="stats">
+        <div class="stats-a">
+          <h3>Player 1</h3>
+          <div>Score: <span class="score"></span></div>
+          <div>No. Turns: <span class="turns"></span></div>
+          <div>Avg. Time: <span class="avg-time"></span></div>
+          <div>Only two: <span class="only-two"></span></div>
+        </div>
+
+        <div class="stats-general">
+          <span>Now Playing</span>
+          <h2 class="player-field"></h2>
+          <button class="skip-button">Skip Turn</button>
+          <div class="timer">
+            <span class="minutes">00</span>:<span class="seconds">00</span>
+          </div>
+        </div>
+
+        <div class="stats-b">
+          <h3>Player 2</h3>
+          <div>Score: <span class="score"></span></div>
+          <div>No. Turns: <span class="turns"></span></div>
+          <div>Avg. Time: <span class="avg-time"></span></div>
+          <div>Only two: <span class="only-two"></span></div>
+        </div>
+      </div>
+
+      <div class="grid-wrapper"></div>
+
     </div>
-    <div class="wrapper">
-    </div>
+
     <script src="script.js"></script>
   </body>
 </html>

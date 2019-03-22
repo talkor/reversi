@@ -1,8 +1,20 @@
-const wrapper = document.querySelector('.wrapper');
+const gridWrapper = document.querySelector('.grid-wrapper');
 const playerField = document.querySelector('.player-field')
 const m = 10;
 const initialPos = [{ x: 4, y:4 }, { x: 5, y: 4 }, { x: 5, y: 5 }, {x: 4, y: 5 }];
 let player1 = true;
+let turnTimestamp = 0;
+
+function statsObj() {
+  this.score = 2;
+  this.turns = 0;
+  this.turnTimes = [];
+  this.avgTime = 0;
+  this.onlyTwo = 0;
+}
+
+let statsA;
+let statsB;
 
 init();
 
@@ -12,13 +24,85 @@ function init() {
   setInitialPos();
   setSquareClickListener();
   initGameClock();
+  initStats();
+  initSkipButton();
   checkLegalMove(player1);
+}
+
+function initStats() {
+  statsA = new statsObj();
+  statsB = new statsObj();
+
+  // Init turn time for the first turn
+  turnTimestamp = new Date().getTime();
+
+  updateStatsOnDOM();
+}
+
+function initSkipButton() {
+  document.querySelector('.skip-button').addEventListener('click', () => {
+    prepateNextTurn();
+  });
+}
+
+function updateStatsOnDOM() {
+  const players = ['a', 'b'];
+  let statsObj;
+
+  players.forEach(player => {
+    statsObj = player === 'a' ? statsA : statsB;
+    document.querySelector(`.stats-${player} .score`).innerHTML = statsObj.score;
+    document.querySelector(`.stats-${player} .turns`).innerHTML = statsObj.turns;
+    document.querySelector(`.stats-${player} .avg-time`).innerHTML = `${statsObj.avgTime}s`;
+    document.querySelector(`.stats-${player} .only-two`).innerHTML = statsObj.onlyTwo; 
+  })
+    
+}
+
+function updateStats() {
+  currentPlayerStats = player1 ? statsA: statsB;
+  
+  // Update turn number
+  currentPlayerStats.turns++;
+
+  // Update average turn time
+  calculateTurnTime(currentPlayerStats);
+
+  // Calculate score
+  calculateScore();
+
+  updateStatsOnDOM();
+}
+
+function calculateScore() {
+  const numBlackCircles = document.querySelectorAll('.black').length;
+  const numWhiteCircles = document.querySelectorAll('.white').length;
+
+  statsA.score = numBlackCircles;
+  statsB.score = numWhiteCircles;
+}
+
+function calculateTurnTime(currentPlayerStats) {
+  const nowTimestamp = new Date().getTime();
+  const elapsedTurnTime = ((nowTimestamp - turnTimestamp) / 1000).toFixed(1);
+  currentPlayerStats.turnTimes.push(elapsedTurnTime);
+  currentPlayerStats.avgTime = calculateAvgTurnTime(currentPlayerStats);
+  turnTimestamp = new Date().getTime();
+}
+
+function calculateAvgTurnTime(currentPlayerStats) {
+  let sum = 0;
+  currentPlayerStats.turnTimes.forEach(turn => {
+    sum += parseInt(turn, 10);
+  });
+
+  return (sum / currentPlayerStats.turnTimes.length).toFixed(1);
 }
 
 function renderBoard() {
   for (let i = 0; i < m; i++) {
     for (let j = 0; j < m; j++) {
-      wrapper.innerHTML += `<div class='square' data-x="${i}" data-y="${j}"><span></span></div>`;
+      gridWrapper.innerHTML += `<div class='square' data-x="${i}" data-y="${j}"><span></span></div>`;
     }
   }
 }
@@ -33,6 +117,7 @@ function setSquareClickListener() {
           square.classList.remove(`legal-${color}`);
           square.classList.add(`${color}`);
           swapSquares(player1, square.dataset.x, square.dataset.y);
+          updateStats();
           prepateNextTurn();
         }
       });
@@ -71,7 +156,7 @@ function initGameClock() {
   let minutes = document.querySelector('.minutes');
   let seconds = document.querySelector('.seconds');
   let totalSeconds = 0;
- 
+
   setInterval(() => {
     totalSeconds++;
     minutes.innerHTML = (parseInt(totalSeconds / 60)).toString().padStart(2, '0');
