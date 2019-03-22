@@ -231,40 +231,61 @@ function initGameClock() {
   }, 1000);
 }
 
-function swapSquares(player, x, y) {
+function swapSquares(player, srcX, srcY) {
   const swappedColor = player ? 'white' : 'black';
   const newColor = player ? 'black' : 'white';
 
-  const newSquares = [];
-
-  const row = document.querySelectorAll(`.square.black[data-x="${x}"], .square.white[data-x="${x}"]`);
-  const col = document.querySelectorAll(`.square.black[data-y="${y}"], .square.white[data-y="${y}"]`);
+  const squaresToSwap = [];
   
-  if (row[0].classList.contains(newColor) && row[row.length-1].classList.contains(newColor)) {
-    for (let i = 0; i < row.length; i++) {
-      if (row[i].classList.contains(swappedColor)) {
-        row[i].classList.remove(swappedColor);
-        row[i].classList.add(newColor);
+  const offsets = [
+    { x: 0, y: 1 }, 
+    { x: 0, y: -1 }, 
+    { x: 1, y: 0 }, 
+    { x: -1, y: 0 }, 
+    { x: 1, y: 1 }, 
+    { x: -1, y: -1 }, 
+    { x: 1, y: -1 }, 
+    { x: -1, y: 1 }, 
+  ];
+
+  for (let i = 0; i < offsets.length; i++) {
+    let possibleSwaps = [];
+    let x = parseInt(srcX, 10) + offsets[i].x;
+    let y = parseInt(srcY, 10) + offsets[i].y; 
+
+    while (square = document.querySelector(`.square.black[data-x="${x}"][data-y="${y}"], .square.white[data-x="${x}"][data-y="${y}"]`)) {
+      if (square.classList.contains(newColor)) {
+        squaresToSwap.push(...possibleSwaps);
+        break;
+      } else {
+        possibleSwaps.push(square);
       }
+  
+      x = parseInt(x, 10) + offsets[i].x;
+      y = parseInt(y, 10) + offsets[i].y;
     }
   }
 
-  if (col[0].classList.contains(newColor) && col[col.length-1].classList.contains(newColor)) {
-    for (let i = 0; i < col.length; i++) {
-      if (col[i].classList.contains(swappedColor)) {
-        col[i].classList.remove(swappedColor);
-        col[i].classList.add(newColor);
-      }
-    }
-  }
-  
-  // newSquares.push(document.querySelectorAll(`.square.black[data-x="${x}"][data-y="${y}"]`));
-
-  for (let i = 0; i < newSquares.length; i++) {
-    newSquares[i][0].classList.remove(swappedColor);
-    newSquares[i][0].classList.add(newColor);
+  for (let i = 0; i < squaresToSwap.length; i++) {
+    squaresToSwap[i].classList.remove(swappedColor);
+    squaresToSwap[i].classList.add(newColor);
   }
 }
+
+function findEdgeSquare(color, x, y, offsetX, offsetY) {
+  x = parseInt(x, 10) + offsetX;
+  y = parseInt(y, 10) + offsetY;
+
+  while (square = document.querySelector(`.square[data-x="${x}"][data-y="${y}"]`)) {
+    if (square.classList.contains(color)) {
+      return square;
+    }
+
+    x = parseInt(x, 10) + offsetX;
+    y = parseInt(y, 10) + offsetY;
+  }
+}
+
 
 function checkLegalMove(player){
   const currentColor = player ? 'black' : 'white';
