@@ -6,19 +6,21 @@ let player1 = true;
 let turnTimestamp = 0;
 let clockInterval;
 let tutorialMode = false;
-
-function statsObj(totalTurnsDuration, totalAvgTime) {
-  this.score = 2;
-  this.turns = 0;
-  this.turnsDuration = [];
-  this.totalTurnsDuration = totalTurnsDuration;
-  this.avgTime = '0.0';
-  this.totalAvgTime = totalAvgTime;
-  this.onlyTwo = 1;
-}
+let aiMode = false;
 
 let statsA;
 let statsB;
+
+const offsets = [
+  { x:  0, y:  1 }, 
+  { x:  0, y: -1 }, 
+  { x:  1, y:  0 }, 
+  { x: -1, y:  0 }, 
+  { x:  1, y:  1 }, 
+  { x: -1, y: -1 }, 
+  { x:  1, y: -1 }, 
+  { x: -1, y:  1 }, 
+];
 
 init();
 
@@ -32,8 +34,19 @@ function init() {
   initSkipButton();
   initResignButton();
   initResetButton();
+  initAIButton();
   initTutorialModeCheckbox();
   checkLegalMove(player1);
+}
+
+function statsObj(totalTurnsDuration, totalAvgTime) {
+  this.score = 2;
+  this.turns = 0;
+  this.turnsDuration = [];
+  this.totalTurnsDuration = totalTurnsDuration;
+  this.avgTime = '0.0';
+  this.totalAvgTime = totalAvgTime;
+  this.onlyTwo = 1;
 }
 
 function initStats(options) {
@@ -60,6 +73,12 @@ function initSkipButton() {
 function initResignButton() {
   document.querySelector('.resign').addEventListener('click', () => {
     gameOver(!player1);
+  });
+}
+
+function initAIButton() {
+  document.querySelector('.ai').addEventListener('click', () => {
+    toggleAIMode();
   });
 }
 
@@ -123,6 +142,17 @@ function updateStats() {
   updateStatsOnDOM();
 }
 
+function toggleAIMode() {
+  aiMode = !aiMode;
+  if (aiMode) {
+    document.querySelector('.stats-b > h3').innerHTML = 'Computer';
+    document.querySelector('.ai').innerHTML = '1-1 Mode';
+  } else {
+    document.querySelector('.stats-b > h3').innerHTML = 'Player 2';
+    document.querySelector('.ai').innerHTML = 'AI Mode';
+  }
+}
+
 function calculateScore() {
   const numBlackCircles = document.querySelectorAll('.black').length;
   const numWhiteCircles = document.querySelectorAll('.white').length;
@@ -172,6 +202,37 @@ function renderBoard() {
   }
 }
 
+function makeAITurn() {
+  const allLegalMoves = document.querySelectorAll('.legal-white');
+  const legalMovesValue = [];
+
+  for (let i = 0; i < allLegalMoves.length; i++) {
+    legalMovesValue.push({ value: aiModeFindBestMove(allLegalMoves[i].dataset.x, allLegalMoves[i].dataset.y), selector: allLegalMoves[i] });
+  }
+  
+  // Find max
+  let max = 0;
+  let selector;
+
+  for (let i = 0; i < legalMovesValue.length; i++) {
+    if (legalMovesValue[i].value > max) {
+      max = legalMovesValue[i].value;
+      selector = legalMovesValue[i].selector;
+    }
+  }
+
+  setTimeout(() => {
+    selector.classList.remove(`legal-white`);
+    selector.classList.add('white');
+
+    swapSquares(false, selector.dataset.x, selector.dataset.y);
+    updateStats();
+    prepateNextTurn();
+    checkGameOver();
+  }, 500);
+  
+}
+
 function setSquareClickListener() {
   const colors = ['black', 'white'];
 
@@ -209,16 +270,18 @@ function checkGameOver() {
   const numSquares = document.querySelectorAll('.square:not(.black):not(.white)');
 
   if (numSquares.length === 0) {
-    gameOver(statsA.score > statsB.score ? player1 : !player1);
+    return gameOver(statsA.score > statsB.score ? player1 : !player1);
   }
 
   if (statsA.score === 0) {
-    gameOver(false);
+    return gameOver(false);
   }
 
   if (statsB.score === 0) {
-    gameOver(true);
+    return gameOver(true);
   }
+
+  if (aiMode && !player1) { makeAITurn() };
 }
 
 function prepateNextTurn() {
@@ -228,7 +291,11 @@ function prepateNextTurn() {
     playerField.innerHTML = 'Player 1';
     playerField.classList.remove('white-text');
   } else {
-    playerField.innerHTML = 'Player 2';
+    if (aiMode) {
+      playerField.innerHTML = 'Computer';
+    } else {
+      playerField.innerHTML = 'Player 2';
+    }
     playerField.classList.add('white-text');
   }
 
@@ -254,7 +321,7 @@ function clearLegalMoves() {
 
 function initPlayerField() {
   playerField.classList.remove('white-text');
-  playerField.innerHTML = `Player 1`;
+  playerField.innerHTML = 'Player 1';
 }
 
 function setInitialPos() {
@@ -279,21 +346,9 @@ function initGameClock() {
 }
 
 function tutorialModeCheck(player, srcX, srcY) {
-  const swappedColor = player ? 'white' : 'black';
   const newColor = player ? 'black' : 'white';
 
   const squaresToSwap = [];
-  
-  const offsets = [
-    { x:  0, y:  1 }, 
-    { x:  0, y: -1 }, 
-    { x:  1, y:  0 }, 
-    { x: -1, y:  0 }, 
-    { x:  1, y:  1 }, 
-    { x: -1, y: -1 }, 
-    { x:  1, y: -1 }, 
-    { x: -1, y:  1 }, 
-  ];
 
   for (let i = 0; i < offsets.length; i++) {
     let possibleSwaps = [];
@@ -314,11 +369,35 @@ function tutorialModeCheck(player, srcX, srcY) {
   }
 
   const hintSquare = document.querySelector(`.square[data-x="${srcX}"][data-y="${srcY}"] span`);
-  
-  if (hintSquare ) {
+
+  if (hintSquare) {
     hintSquare.innerHTML = squaresToSwap.length;
     hintSquare.classList.add('hint');
   }
+}
+
+function aiModeFindBestMove(srcX, srcY) {
+  const squaresToSwap = [];
+
+  for (let i = 0; i < offsets.length; i++) {
+    let possibleSwaps = [];
+    let x = parseInt(srcX, 10) + offsets[i].x;
+    let y = parseInt(srcY, 10) + offsets[i].y; 
+
+    while (square = document.querySelector(`.square.black[data-x="${x}"][data-y="${y}"], .square.white[data-x="${x}"][data-y="${y}"]`)) {
+      if (square.classList.contains('white')) {
+        squaresToSwap.push(...possibleSwaps);
+        break;
+      } else {
+        possibleSwaps.push(square);
+      }
+  
+      x = parseInt(x, 10) + offsets[i].x;
+      y = parseInt(y, 10) + offsets[i].y;
+    }
+  }
+
+  return squaresToSwap.length;
 }
 
 function swapSquares(player, srcX, srcY) {
@@ -326,17 +405,6 @@ function swapSquares(player, srcX, srcY) {
   const newColor = player ? 'black' : 'white';
 
   const squaresToSwap = [];
-  
-  const offsets = [
-    { x:  0, y:  1 }, 
-    { x:  0, y: -1 }, 
-    { x:  1, y:  0 }, 
-    { x: -1, y:  0 }, 
-    { x:  1, y:  1 }, 
-    { x: -1, y: -1 }, 
-    { x:  1, y: -1 }, 
-    { x: -1, y:  1 }, 
-  ];
 
   for (let i = 0; i < offsets.length; i++) {
     let possibleSwaps = [];
@@ -404,7 +472,16 @@ function gameOver(player) {
   if (!player) document.querySelector('.winner').classList.add('white-text');
   document.querySelector('.game-on').style.display = 'none';
   document.querySelector('.game-over').style.display = 'block';
-  document.querySelector('.winner').innerHTML = `Player ${player ? '1' : '2'} won!`;
+
+  let winningPlayer;
+
+  if (aiMode) {
+    winningPlayer = player ? 'Player 1' : 'Computer';
+  } else {
+    winningPlayer = player ? 'Player 1' : 'Player 2';
+  }
+
+  document.querySelector('.winner').innerHTML = `${winningPlayer} wins!`;
   clearLegalMoves();
 }
 
