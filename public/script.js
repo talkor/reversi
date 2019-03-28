@@ -215,6 +215,9 @@ function makeAITurn() {
   let selector;
 
   for (let i = 0; i < legalMovesValue.length; i++) {
+    if (i === 0) {
+      selector = legalMovesValue[0].selector;
+    }
     if (legalMovesValue[i].value > max) {
       max = legalMovesValue[i].value;
       selector = legalMovesValue[i].selector;
