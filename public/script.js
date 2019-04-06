@@ -362,7 +362,7 @@ function tutorialModeCheck(player, srcX, srcY) {
   const hintSquare = document.querySelector(`.square[data-x="${srcX}"][data-y="${srcY}"] span`);
 
   if (hintSquare) {
-    hintSquare.innerHTML = squaresToSwap.length;
+    hintSquare.innerHTML = squaresToSwap.length + 1;
     hintSquare.classList.add('hint');
   }
 }
