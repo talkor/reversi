@@ -1,6 +1,5 @@
 const gridWrapper = document.querySelector('.grid-wrapper');
 const playerField = document.querySelector('.player-field');
-const resignButton = document.querySelector('.resign');
 const gameOnDiv = document.querySelector('.game-on');
 const gameOverDiv = document.querySelector('.game-over');
 const winnderField = document.querySelector('.winner');
@@ -21,14 +20,19 @@ init();
 function init() {
   renderBoard();
   initPlayerField();
-  setInitialPos();
-  setSquareClickListener();
+  setInitialPosition();
+  setSquareListeners();
+
+  // Init stats and clock
   initGameClock();
   initStats();
+
+  // Init buttons
   initSkipButton();
   initResignButton();
   initResetButton();
   initAIButton();
+
   initTutorialModeCheckbox();
   checkLegalMove(player1);
 }
@@ -63,7 +67,12 @@ function initStats(options) {
   // Init turn time for the first turn
   turnTimestamp = new Date().getTime();
 
-  updateStatsOnDOM();
+  renderStats();
+}
+
+function initPlayerField() {
+  playerField.classList.remove('white-text');
+  playerField.innerHTML = 'Player 1';
 }
 
 function initSkipButton() {
@@ -73,7 +82,7 @@ function initSkipButton() {
 }
 
 function initResignButton() {
-  resignButton.addEventListener('click', () => {
+  document.querySelector('.resign').addEventListener('click', () => {
     gameOver(!player1);
   });
 }
@@ -86,11 +95,7 @@ function initAIButton() {
 
 function initTutorialModeCheckbox() {
   document.querySelector('.tutorial-mode input').addEventListener('change', function() {
-    if (this.checked) {
-      tutorialMode = true;
-    } else {
-      tutorialMode = false;
-    }
+    tutorialMode = this.checked;
   });
 }
 
@@ -109,19 +114,19 @@ function initResetButton() {
     gameOn();
     initGameClock();
     initPlayerField();
-    setInitialPos();
+    setInitialPosition();
     initStats({ continuing: true });
     checkLegalMove(player1);
     winnderField.classList.remove('white-text');
   });
 }
 
-function updateStatsOnDOM() {
+function renderStats() {
   const players = [1, 2];
   let statsObj;
 
   players.forEach(player => {
-    statsObj = player === 'a' ? stats1 : stats2;
+    statsObj = player === 1 ? stats1 : stats2;
     document.querySelector(`.stats-${player} .score`).innerHTML = statsObj.score;
     document.querySelector(`.stats-${player} .turns`).innerHTML = statsObj.turns;
     document.querySelector(`.stats-${player} .avg-time`).innerHTML = `${statsObj.avgTime}s`;
@@ -131,18 +136,12 @@ function updateStatsOnDOM() {
 }
 
 function updateStats() {
-  currentPlayerStats = player1 ? stats1: stats2;
-  
-  // Update turn number
-  currentPlayerStats.turns++;
+  currentPlayerStats = player1 ? stats1 : stats2;
+  currentPlayerStats.turns++; // Update turn number
 
-  // Update average turn time
-  calculateTurnTime(currentPlayerStats);
-
-  // Calculate score and onlyTwo
-  calculateScore();
-
-  updateStatsOnDOM();
+  calculateTurnTime(currentPlayerStats); // Update average turn time
+  calculateScore(); // Calculate score and onlyTwo
+  renderStats();
 }
 
 function toggleAIMode() {
@@ -157,19 +156,17 @@ function toggleAIMode() {
 }
 
 function calculateScore() {
-  const numBlackCircles = document.querySelectorAll('.black').length;
-  const numWhiteCircles = document.querySelectorAll('.white').length;
+  stats1.score = document.querySelectorAll('.black').length;;
+  stats2.score = document.querySelectorAll('.white').length;;
 
-  stats1.score = numBlackCircles;
-  stats2.score = numWhiteCircles;
-
-  if (numBlackCircles === 2) { stats1.onlyTwo++ };
-  if (numWhiteCircles === 2) { stats2.onlyTwo++ };
+  if (stats1.score === 2) { stats1.onlyTwo++ };
+  if (stats2.score === 2) { stats2.onlyTwo++ };
 }
 
 function calculateTurnTime(currentPlayerStats) {
   const nowTimestamp = new Date().getTime();
   const elapsedTurnTime = ((nowTimestamp - turnTimestamp) / 1000).toFixed(1);
+
   currentPlayerStats.turnsDuration.push(elapsedTurnTime);
   currentPlayerStats.totalTurnsDuration.push(elapsedTurnTime);
   currentPlayerStats.avgTime = calculateAvgTurnTime(currentPlayerStats);
@@ -230,7 +227,7 @@ function makeAITurn() {
   }, 500);
 }
 
-function setSquareClickListener() {
+function setSquareListeners() {
   const colors = ['black', 'white'];
 
   document.querySelectorAll('.square').forEach(square => {
@@ -247,6 +244,7 @@ function setSquareClickListener() {
       });
     });
 
+    // OnMouseOver show hints when tutorial mode is on
     square.addEventListener('mouseover', () => {
       colors.forEach(color => {
         if (tutorialMode && square.classList.contains(`legal-${color}`)) {
@@ -255,6 +253,7 @@ function setSquareClickListener() {
       });
     });
 
+    // OnMouseLeave hide hints when tutorial mode is on
     square.addEventListener('mouseleave', () => {
         if (tutorialMode) {
           clearTutorialHints();
@@ -270,14 +269,8 @@ function checkGameOver() {
     return gameOver(stats1.score > stats2.score ? player1 : !player1);
   }
 
-  if (stats1.score === 0) {
-    return gameOver(false);
-  }
-
-  if (stats2.score === 0) {
-    return gameOver(true);
-  }
-
+  if (stats1.score === 0) { return gameOver(false); }
+  if (stats2.score === 0) { return gameOver(true); }
   if (aiMode && !player1) { makeAITurn() };
 }
 
@@ -308,7 +301,6 @@ function clearTutorialHints() {
   document.querySelectorAll(`.square span`).forEach(square => {
     square.innerHTML = ''
     square.classList.remove('hint')
-
   });
 }
 
@@ -319,12 +311,7 @@ function clearLegalMoves() {
   });
 }
 
-function initPlayerField() {
-  playerField.classList.remove('white-text');
-  playerField.innerHTML = 'Player 1';
-}
-
-function setInitialPos() {
+function setInitialPosition() {
   let addedClass;
 
   initialPos.forEach(pos => {
@@ -334,9 +321,9 @@ function setInitialPos() {
 }
 
 function initGameClock() {
+  let totalSeconds = 0;
   let minutes = document.querySelector('.minutes');
   let seconds = document.querySelector('.seconds');
-  let totalSeconds = 0;
 
   clockInterval = setInterval(() => {
     totalSeconds++;
@@ -411,14 +398,16 @@ function checkLegalMove(player){
     }
   });
 }
-function zeroizeClock() {
+
+function stopClock() {
+  clearInterval(clockInterval);
+
   document.querySelector('.minutes').innerHTML = '00';
   document.querySelector('.seconds').innerHTML = '00';
 }
 
 function gameOver(player) {
-  clearInterval(clockInterval);
-  zeroizeClock();
+  stopClock();
 
   if (!player) {
     winnderField.classList.add('white-text');
