@@ -1,26 +1,20 @@
 const gridWrapper = document.querySelector('.grid-wrapper');
-const playerField = document.querySelector('.player-field')
+const playerField = document.querySelector('.player-field');
+const resignButton = document.querySelector('.resign');
+const gameOnDiv = document.querySelector('.game-on');
+const gameOverDiv = document.querySelector('.game-over');
+const winnderField = document.querySelector('.winner');
+
 const m = 10;
-const initialPos = [{ x: 4, y:4 }, { x: 5, y: 4 }, { x: 5, y: 5 }, { x: 4, y: 5 }];
+
 let player1 = true;
 let turnTimestamp = 0;
 let clockInterval;
 let tutorialMode = false;
 let aiMode = false;
 
-let statsA;
-let statsB;
-
-const offsets = [
-  { x:  0, y:  1 }, 
-  { x:  0, y: -1 }, 
-  { x:  1, y:  0 }, 
-  { x: -1, y:  0 }, 
-  { x:  1, y:  1 }, 
-  { x: -1, y: -1 }, 
-  { x:  1, y: -1 }, 
-  { x: -1, y:  1 }, 
-];
+let stats1;
+let stats2;
 
 init();
 
@@ -49,13 +43,21 @@ function statsObj(totalTurnsDuration, totalAvgTime) {
   this.onlyTwo = 1;
 }
 
+function renderBoard() {
+  for (let i = 0; i < m; i++) {
+    for (let j = 0; j < m; j++) {
+      gridWrapper.innerHTML += `<div class='square' data-x="${i}" data-y="${j}"><span></span></div>`;
+    }
+  }
+}
+
 function initStats(options) {
   if (options && options.continuing) {
-    statsA = new statsObj(statsA.totalTurnsDuration, statsA.totalAvgTime);
-    statsB = new statsObj(statsB.totalTurnsDuration, statsB.totalAvgTime);
+    stats1 = new statsObj(stats1.totalTurnsDuration, stats1.totalAvgTime);
+    stats2 = new statsObj(stats2.totalTurnsDuration, stats2.totalAvgTime);
   } else {
-    statsA = new statsObj([], '0.0');
-    statsB = new statsObj([], '0.0'); 
+    stats1 = new statsObj([], '0.0');
+    stats2 = new statsObj([], '0.0'); 
   }
 
   // Init turn time for the first turn
@@ -71,7 +73,7 @@ function initSkipButton() {
 }
 
 function initResignButton() {
-  document.querySelector('.resign').addEventListener('click', () => {
+  resignButton.addEventListener('click', () => {
     gameOver(!player1);
   });
 }
@@ -94,13 +96,14 @@ function initTutorialModeCheckbox() {
 
 function initResetButton() {
   document.querySelector('.reset').addEventListener('click', () => {
-    const elementToClear = document.querySelectorAll('.square');
-    for (let i = 0; i < elementToClear.length; i++) {
-      elementToClear[i].classList.remove('black');
-      elementToClear[i].classList.remove('white');
-      elementToClear[i].classList.remove('legal-black');
-      elementToClear[i].classList.remove('legal-white');
-    }
+
+    // Clear 'black', 'white' and 'legal-' classes
+    document.querySelectorAll('.square').forEach((element) => {
+      element.classList.remove('black');
+      element.classList.remove('white');
+      element.classList.remove('legal-black');
+      element.classList.remove('legal-white');
+    });
 
     player1 = true;
     gameOn();
@@ -109,16 +112,16 @@ function initResetButton() {
     setInitialPos();
     initStats({ continuing: true });
     checkLegalMove(player1);
-    document.querySelector('.winner').classList.remove('white-text');
+    winnderField.classList.remove('white-text');
   });
 }
 
 function updateStatsOnDOM() {
-  const players = ['a', 'b'];
+  const players = [1, 2];
   let statsObj;
 
   players.forEach(player => {
-    statsObj = player === 'a' ? statsA : statsB;
+    statsObj = player === 'a' ? stats1 : stats2;
     document.querySelector(`.stats-${player} .score`).innerHTML = statsObj.score;
     document.querySelector(`.stats-${player} .turns`).innerHTML = statsObj.turns;
     document.querySelector(`.stats-${player} .avg-time`).innerHTML = `${statsObj.avgTime}s`;
@@ -128,7 +131,7 @@ function updateStatsOnDOM() {
 }
 
 function updateStats() {
-  currentPlayerStats = player1 ? statsA: statsB;
+  currentPlayerStats = player1 ? stats1: stats2;
   
   // Update turn number
   currentPlayerStats.turns++;
@@ -145,10 +148,10 @@ function updateStats() {
 function toggleAIMode() {
   aiMode = !aiMode;
   if (aiMode) {
-    document.querySelector('.stats-b > h3').innerHTML = 'Computer';
+    document.querySelector('.stats-2 > h3').innerHTML = 'Computer';
     document.querySelector('.ai').innerHTML = '1-1 Mode';
   } else {
-    document.querySelector('.stats-b > h3').innerHTML = 'Player 2';
+    document.querySelector('.stats-2 > h3').innerHTML = 'Player 2';
     document.querySelector('.ai').innerHTML = 'AI Mode';
   }
 }
@@ -157,11 +160,11 @@ function calculateScore() {
   const numBlackCircles = document.querySelectorAll('.black').length;
   const numWhiteCircles = document.querySelectorAll('.white').length;
 
-  statsA.score = numBlackCircles;
-  statsB.score = numWhiteCircles;
+  stats1.score = numBlackCircles;
+  stats2.score = numWhiteCircles;
 
-  if (numBlackCircles === 2) { statsA.onlyTwo++ };
-  if (numWhiteCircles === 2) { statsB.onlyTwo++ };
+  if (numBlackCircles === 2) { stats1.onlyTwo++ };
+  if (numWhiteCircles === 2) { stats2.onlyTwo++ };
 }
 
 function calculateTurnTime(currentPlayerStats) {
@@ -194,35 +197,27 @@ function calculateTotalAvgTurnTime(currentPlayerStats) {
   return (sum / currentPlayerStats.totalTurnsDuration.length).toFixed(1);
 }
 
-function renderBoard() {
-  for (let i = 0; i < m; i++) {
-    for (let j = 0; j < m; j++) {
-      gridWrapper.innerHTML += `<div class='square' data-x="${i}" data-y="${j}"><span></span></div>`;
-    }
-  }
-}
-
 function makeAITurn() {
   const allLegalMoves = document.querySelectorAll('.legal-white');
   const legalMovesValue = [];
 
-  for (let i = 0; i < allLegalMoves.length; i++) {
-    legalMovesValue.push({ value: aiModeFindBestMove(allLegalMoves[i].dataset.x, allLegalMoves[i].dataset.y), selector: allLegalMoves[i] });
-  }
-  
+  allLegalMoves.forEach(move => {
+    legalMovesValue.push({ value: aiModeFindBestMove(move.dataset.x, move.dataset.y), selector: move });
+  });
+    
   // Find max
   let max = 0;
   let selector;
 
-  for (let i = 0; i < legalMovesValue.length; i++) {
+  legalMovesValue.forEach((move, i) => {
     if (i === 0) {
-      selector = legalMovesValue[0].selector;
+      selector = move.selector;
     }
-    if (legalMovesValue[i].value > max) {
-      max = legalMovesValue[i].value;
-      selector = legalMovesValue[i].selector;
+    if (move.value > max) {
+      max = move.value;
+      selector = move.selector;
     }
-  }
+  });
 
   setTimeout(() => {
     selector.classList.remove(`legal-white`);
@@ -233,14 +228,13 @@ function makeAITurn() {
     prepateNextTurn();
     checkGameOver();
   }, 500);
-  
 }
 
 function setSquareClickListener() {
   const colors = ['black', 'white'];
 
   document.querySelectorAll('.square').forEach(square => {
-    square.addEventListener('click', event => {
+    square.addEventListener('click', () => {
       colors.forEach(color => {
         if (square.classList.contains(`legal-${color}`)) {
           square.classList.remove(`legal-${color}`);
@@ -253,7 +247,7 @@ function setSquareClickListener() {
       });
     });
 
-    square.addEventListener('mouseover', event => {
+    square.addEventListener('mouseover', () => {
       colors.forEach(color => {
         if (tutorialMode && square.classList.contains(`legal-${color}`)) {
           tutorialModeCheck(player1, square.dataset.x, square.dataset.y);
@@ -261,7 +255,7 @@ function setSquareClickListener() {
       });
     });
 
-    square.addEventListener('mouseleave', event => {
+    square.addEventListener('mouseleave', () => {
         if (tutorialMode) {
           clearTutorialHints();
         }
@@ -273,14 +267,14 @@ function checkGameOver() {
   const numSquares = document.querySelectorAll('.square:not(.black):not(.white)');
 
   if (numSquares.length === 0) {
-    return gameOver(statsA.score > statsB.score ? player1 : !player1);
+    return gameOver(stats1.score > stats2.score ? player1 : !player1);
   }
 
-  if (statsA.score === 0) {
+  if (stats1.score === 0) {
     return gameOver(false);
   }
 
-  if (statsB.score === 0) {
+  if (stats2.score === 0) {
     return gameOver(true);
   }
 
@@ -302,15 +296,18 @@ function prepateNextTurn() {
     playerField.classList.add('white-text');
   }
 
-  if (tutorialMode) clearTutorialHints();
+  if (tutorialMode) {
+    clearTutorialHints();
+  }
+    
   clearLegalMoves();
-  checkLegalMove(player1);
+  checkLegalMove(player1)
 }
 
 function clearTutorialHints() {
   document.querySelectorAll(`.square span`).forEach(square => {
-    square.innerHTML = '';
-    square.classList.remove('hint');
+    square.innerHTML = ''
+    square.classList.remove('hint')
 
   });
 }
@@ -348,15 +345,13 @@ function initGameClock() {
   }, 1000);
 }
 
-function tutorialModeCheck(player, srcX, srcY) {
-  const newColor = player ? 'black' : 'white';
+function checkPossibleSwaps(srcX, srcY, newColor) {
+  let squaresToSwap = [];
 
-  const squaresToSwap = [];
-
-  for (let i = 0; i < offsets.length; i++) {
+  offsets.forEach((offset) => {
     let possibleSwaps = [];
-    let x = parseInt(srcX, 10) + offsets[i].x;
-    let y = parseInt(srcY, 10) + offsets[i].y; 
+    let x = parseInt(srcX, 10) + offset.x;
+    let y = parseInt(srcY, 10) + offset.y; 
 
     while (square = document.querySelector(`.square.black[data-x="${x}"][data-y="${y}"], .square.white[data-x="${x}"][data-y="${y}"]`)) {
       if (square.classList.contains(newColor)) {
@@ -366,11 +361,17 @@ function tutorialModeCheck(player, srcX, srcY) {
         possibleSwaps.push(square);
       }
   
-      x = parseInt(x, 10) + offsets[i].x;
-      y = parseInt(y, 10) + offsets[i].y;
+      x += offset.x;
+      y += offset.y;
     }
-  }
+  });
 
+  return squaresToSwap;
+}
+
+function tutorialModeCheck(player, srcX, srcY) {
+  const newColor = player ? 'black' : 'white';
+  const squaresToSwap = checkPossibleSwaps(srcX, srcY, newColor);
   const hintSquare = document.querySelector(`.square[data-x="${srcX}"][data-y="${srcY}"] span`);
 
   if (hintSquare) {
@@ -380,89 +381,36 @@ function tutorialModeCheck(player, srcX, srcY) {
 }
 
 function aiModeFindBestMove(srcX, srcY) {
-  const squaresToSwap = [];
-
-  for (let i = 0; i < offsets.length; i++) {
-    let possibleSwaps = [];
-    let x = parseInt(srcX, 10) + offsets[i].x;
-    let y = parseInt(srcY, 10) + offsets[i].y; 
-
-    while (square = document.querySelector(`.square.black[data-x="${x}"][data-y="${y}"], .square.white[data-x="${x}"][data-y="${y}"]`)) {
-      if (square.classList.contains('white')) {
-        squaresToSwap.push(...possibleSwaps);
-        break;
-      } else {
-        possibleSwaps.push(square);
-      }
-  
-      x = parseInt(x, 10) + offsets[i].x;
-      y = parseInt(y, 10) + offsets[i].y;
-    }
-  }
-
-  return squaresToSwap.length;
+  return checkPossibleSwaps(srcX, srcY, 'white').length;
 }
 
 function swapSquares(player, srcX, srcY) {
   const swappedColor = player ? 'white' : 'black';
   const newColor = player ? 'black' : 'white';
 
-  const squaresToSwap = [];
+  const squaresToSwap = checkPossibleSwaps(srcX, srcY, newColor);
 
-  for (let i = 0; i < offsets.length; i++) {
-    let possibleSwaps = [];
-    let x = parseInt(srcX, 10) + offsets[i].x;
-    let y = parseInt(srcY, 10) + offsets[i].y; 
-
-    while (square = document.querySelector(`.square.black[data-x="${x}"][data-y="${y}"], .square.white[data-x="${x}"][data-y="${y}"]`)) {
-      if (square.classList.contains(newColor)) {
-        squaresToSwap.push(...possibleSwaps);
-        break;
-      } else {
-        possibleSwaps.push(square);
-      }
-  
-      x = parseInt(x, 10) + offsets[i].x;
-      y = parseInt(y, 10) + offsets[i].y;
-    }
-  }
-
-  for (let i = 0; i < squaresToSwap.length; i++) {
-    squaresToSwap[i].classList.remove(swappedColor);
-    squaresToSwap[i].classList.add(newColor);
-  }
-}
-
-function findEdgeSquare(color, x, y, offsetX, offsetY) {
-  x = parseInt(x, 10) + offsetX;
-  y = parseInt(y, 10) + offsetY;
-
-  while (square = document.querySelector(`.square[data-x="${x}"][data-y="${y}"]`)) {
-    if (square.classList.contains(color)) {
-      return square;
-    }
-
-    x = parseInt(x, 10) + offsetX;
-    y = parseInt(y, 10) + offsetY;
-  }
+  squaresToSwap.forEach(square => {
+    square.classList.remove(swappedColor);
+    square.classList.add(newColor);
+  });
 }
 
 function checkLegalMove(player){
   const currentColor = player ? 'black' : 'white';
-  const oppositeColor = player ? 'white' : 'black';
 
   document.querySelectorAll('.black, .white').forEach(square => {
     let element;
-      for (let i = -1; i <= 1; i++) {
-        for (let j = -1; j <= 1; j++) {
-          element = document.querySelector(`.square:not(.black):not(.white)[data-x="${parseInt(square.dataset.x) + i}"][data-y="${parseInt(square.dataset.y) + j}"]`);
-          if (element != null)
-            element.classList.add(`legal-${currentColor}`);
-        }
-      }
-  })
-}
 
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        element = document.querySelector(`.square:not(.black):not(.white)[data-x="${parseInt(square.dataset.x) + i}"][data-y="${parseInt(square.dataset.y) + j}"]`);
+        if (element != null)
+          element.classList.add(`legal-${currentColor}`);
+      }
+    }
+  });
+}
 function zeroizeClock() {
   document.querySelector('.minutes').innerHTML = '00';
   document.querySelector('.seconds').innerHTML = '00';
@@ -472,9 +420,12 @@ function gameOver(player) {
   clearInterval(clockInterval);
   zeroizeClock();
 
-  if (!player) document.querySelector('.winner').classList.add('white-text');
-  document.querySelector('.game-on').style.display = 'none';
-  document.querySelector('.game-over').style.display = 'block';
+  if (!player) {
+    winnderField.classList.add('white-text');
+  }
+
+  gameOnDiv.style.display = 'none';
+  gameOverDiv.style.display = 'block';
 
   let winningPlayer;
 
@@ -484,12 +435,12 @@ function gameOver(player) {
     winningPlayer = player ? 'Player 1' : 'Player 2';
   }
 
-  document.querySelector('.winner').innerHTML = `${winningPlayer} wins!`;
+  winnderField.innerHTML = `${winningPlayer} wins!`;
   clearLegalMoves();
 }
 
 function gameOn() {
-  document.querySelector('.game-on').style.display = 'block';
-  document.querySelector('.game-over').style.display = 'none';
+  gameOnDiv.style.display = 'block';
+  gameOverDiv.style.display = 'none';
   playerField.classList.remove('white-text');
 }
